@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include "SDL2/SDL_log.h"
 #include "constans.h"
+#include "textures.h"
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
@@ -50,12 +51,17 @@ struct Ray
 	int wallHitContent;
 } rays[NUM_RAYS];
 
+Uint32* colorBuffer = NULL;
+Uint32* texture = NULL;
+Uint32 textures[NUM_TEXTURES]
+SDL_Texture* colorBufferTexture;
+
 int isInsideWall(int x, int y)
 {
 	int row = floor(y / TILE_SIZE);
 	int column = floor(x / TILE_SIZE);
 
-	return map[row][column] == 1;
+	return map[row][column] != 0;
 }
 
 float normalizeAngle(float rayAngle)
@@ -69,6 +75,11 @@ float normalizeAngle(float rayAngle)
 	return rayAngle;
 }
 
+float distanceBetweenPoints(float x1, float y1, float x2, float y2)
+{
+	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
 float castRay(float rayAngle, int index)
 {
 	rayAngle = normalizeAngle(rayAngle);
@@ -77,19 +88,18 @@ float castRay(float rayAngle, int index)
 	int isRayFacingUp = !isRayFacingDown;
 	
 	int isRayFacingRight = rayAngle < 0.5 * PI || rayAngle > 1.5 * PI;
-	int isRayFacingLeft = !isRayFacingDown;
+	int isRayFacingLeft = !isRayFacingRight;
 
 	float xIntercept;
 	float yIntercept;
 	float xStep;
 	float yStep;
 
-	int horizontalWallHitX;
-	int horizontalWallHitY;
-	int horizontalWallContent;
+	int foundHorizontalWallHit = 0;
+	int horizontalWallHitX = 0;
+	int horizontalWallHitY = 0;
+	int horizontalWallContent = 0;
 
-	int foundHorizontalWallHit;
-	int horizontalWallContent;
 
 	yIntercept = floor(player.y / TILE_SIZE) * TILE_SIZE;
 	yIntercept += isRayFacingDown ? TILE_SIZE : 0; 
@@ -97,7 +107,7 @@ float castRay(float rayAngle, int index)
 	xIntercept = player.x + (yIntercept - player.y) / tan(rayAngle);
 
 	yStep = TILE_SIZE;
-	xStep *= isRayFacingUp ? -1 : 1;
+	yStep *= isRayFacingUp ? -1 : 1;
 
 	xStep = TILE_SIZE / tan(rayAngle);
 	xStep *= (isRayFacingLeft && xStep > 0) ? -1 : 1;
@@ -106,17 +116,18 @@ float castRay(float rayAngle, int index)
 	float nextHorizontalTouchX = xIntercept;
 	float nextHorizontalTouchY = yIntercept;
 
-	while(nextHorizontalTouchX >= 0 && nextHorizontalTouchX <= WINDOW_WIDTH && nextHorizontalTouchY >= 0 && nextHorizontalTouchY < WINDOW_HEIGHT)
+	while(nextHorizontalTouchX >= 0 && nextHorizontalTouchX <= WINDOW_WIDTH && nextHorizontalTouchY >= 0 && nextHorizontalTouchY <= WINDOW_HEIGHT)
 	{
 		float xToCheck = nextHorizontalTouchX;
-		float yToCheck = nextHorizontalTouchY + (isRayFacingUp) ? -1 : 0;
+		float yToCheck = nextHorizontalTouchY + (isRayFacingUp ? -1 : 0);
 
-		if(mapHasWallAt(xToCheck, yToCheck))
+		if(isInsideWall(xToCheck, yToCheck))
 		{
 			horizontalWallHitX = nextHorizontalTouchX;
 			horizontalWallHitY = nextHorizontalTouchY;
-			foundHorizontalWallHit = 1;
 			horizontalWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
+			foundHorizontalWallHit = 1;
+			break;
 		}
 		else
 		{
@@ -124,6 +135,75 @@ float castRay(float rayAngle, int index)
 			nextHorizontalTouchY += yStep;
 		}
 	}
+
+	// Vertical check
+	//--------------------------------------------------------------------------
+	int foundVerticalWallHit = 0;
+	int verticalWallHitX = 0;
+	int verticalWallHitY = 0;
+	int verticalWallContent = 0;
+
+	xIntercept = floor(player.x / TILE_SIZE) * TILE_SIZE;
+	xIntercept += isRayFacingRight ? TILE_SIZE : 0; 
+
+	yIntercept = player.y + (xIntercept - player.x) * tan(rayAngle);
+
+	xStep = TILE_SIZE;
+	xStep *= isRayFacingLeft ? -1 : 1;
+
+	yStep = TILE_SIZE * tan(rayAngle);
+	yStep *= (isRayFacingUp && yStep > 0) ? -1 : 1;
+	yStep *= (isRayFacingDown && yStep < 0) ? -1 : 1;
+
+	float nextVerticalTouchX = xIntercept;
+	float nextVerticalTouchY = yIntercept;
+
+	while(nextVerticalTouchX >= 0 && nextVerticalTouchX <= WINDOW_WIDTH && nextVerticalTouchY >= 0 && nextVerticalTouchY <= WINDOW_HEIGHT)
+	{
+		float xToCheck = nextVerticalTouchX + (isRayFacingLeft ? -1 : 0);
+		float yToCheck = nextVerticalTouchY;
+
+		if(isInsideWall(xToCheck, yToCheck))
+		{
+			verticalWallHitX = nextVerticalTouchX;
+			verticalWallHitY = nextVerticalTouchY;
+			verticalWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
+			foundVerticalWallHit = 1;
+			break;
+		}
+		else
+		{
+			nextVerticalTouchX += xStep;
+			nextVerticalTouchY += yStep;
+		}
+	}
+
+	// calc smallest one
+	float horizontalDistance = foundHorizontalWallHit ? distanceBetweenPoints(player.x, player.y, horizontalWallHitX, horizontalWallHitY) : FLT_MAX;
+	float verticalDistance = foundVerticalWallHit ? distanceBetweenPoints(player.x, player.y, verticalWallHitX, verticalWallHitY) : FLT_MAX;
+
+	if(verticalDistance < horizontalDistance)
+	{
+		rays[index].distance = verticalDistance;
+		rays[index].wallHitX = verticalWallHitX;
+		rays[index].wallHitY = verticalWallHitY;
+		rays[index].wallHitContent = verticalWallContent;
+		rays[index].wasHitVertical = 1;
+	}
+	else
+	{
+		rays[index].distance = horizontalDistance;
+		rays[index].wallHitX = horizontalWallHitX;
+		rays[index].wallHitY = horizontalWallHitY;
+		rays[index].wallHitContent = horizontalWallContent;
+		rays[index].wasHitVertical = 0;
+	}
+
+	rays[index].rayAngle = rayAngle;
+	rays[index].rayFacingDown = isRayFacingDown;
+	rays[index].rayFacingUp = isRayFacingUp;
+	rays[index].rayFacingLeft = isRayFacingLeft;
+	rays[index].rayFacingRight = isRayFacingRight;
 }
 
 void castAlLRays()
@@ -146,7 +226,6 @@ void movePlayer(float dt)
     float newPlayerY = player.y + sin(player.rotationAngle) * moveStep;
 
 	int res = isInsideWall(newPlayerX, newPlayerY);
-	printf("%d", res);
 	if(res)
 	{
 		return;
@@ -192,7 +271,11 @@ int initializeWindow()
 
 void renderRays()
 {
-
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+	for(int i = 0; i < NUM_RAYS; i++)
+	{
+		SDL_RenderDrawLine(renderer, MINIMAP_SCALE_FACTOR * player.x, MINIMAP_SCALE_FACTOR * player.y, MINIMAP_SCALE_FACTOR * rays[i].wallHitX, MINIMAP_SCALE_FACTOR * rays[i].wallHitY);
+	}
 }
 
 void renderPlayer()
@@ -234,6 +317,7 @@ void renderMap()
 		}
 }
 
+
 void setup()
 {
 	player.x = WINDOW_WIDTH / 2;
@@ -242,9 +326,20 @@ void setup()
 	player.width = 5;
 	player.turnDirection = 0;
 	player.walkDirection = 0;
-	player.turnSpeed = 45 * (PI / 180);
-	player.walkSpeed = 100;
+	player.turnSpeed = 90 * (PI / 180);
+	player.walkSpeed = 250;
 	player.rotationAngle = PI / 2;
+
+	colorBuffer = (Uint32*)malloc(sizeof(Uint32) * (Uint32)WINDOW_WIDTH * (Uint32)WINDOW_HEIGHT);
+	texture = (Uint32*)malloc(sizeof(Uint32) * (Uint32)TEXTURE_HEIGHT * (Uint32)TEXTURE_WIDTH);
+
+	colorBufferTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING , WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	for(int x = 0; x < TEXTURE_WIDTH; x++)
+		for(int y = 0; y < TEXTURE_HEIGHT; y++)
+		{
+			texture[(TEXTURE_WIDTH * y) + x] = (x % 8 && y % 8) ? 0xFFFF0000 : 0xFF000000; 
+		}
 }
 
 void processInput()
@@ -303,7 +398,64 @@ void update()
 
 	movePlayer(dt);
 	castAlLRays();
+}
 
+void clearColorBuffer(Uint32 color)
+{
+	for(int i = 0; i < WINDOW_WIDTH; i++)
+		for(int j = 0; j < WINDOW_HEIGHT; j++)
+		{
+			int index = (WINDOW_WIDTH * j) + i;
+			if(j < WINDOW_HEIGHT / 2)
+			{
+				colorBuffer[index]  = 0xFF3b3b3b;
+			}
+			else
+			{
+				colorBuffer[index]  = 0xFF737373;
+			}
+		}
+}
+
+void renderColorBuffer()
+{
+	SDL_UpdateTexture(colorBufferTexture, NULL, colorBuffer, (int)(WINDOW_WIDTH * sizeof(Uint32)));
+	SDL_RenderCopy(renderer, colorBufferTexture, NULL, NULL);
+}
+
+void renderWalls()
+{
+	for(int i = 0; i < NUM_RAYS; i++)
+	{
+		float dist = (WINDOW_WIDTH / 2) / tan(FOV_ANGLE / 2);
+		float correctWallDistance = rays[i].distance * cos(rays[i].rayAngle - player.rotationAngle);
+		float projectedHeight = (TILE_SIZE / correctWallDistance) * dist;
+
+		int wallTopPixel = (WINDOW_HEIGHT / 2)  - (projectedHeight / 2);
+		wallTopPixel = wallTopPixel < 0 ? 0 : wallTopPixel;
+
+		int wallBotPixel = (WINDOW_HEIGHT / 2)  + (projectedHeight / 2);
+		wallBotPixel = wallBotPixel < 0 ? 0 : wallBotPixel;
+
+		int textureOffsetX;
+		if(rays[i].wasHitVertical)
+		{
+			textureOffsetX = (int)rays[i].wallHitY % TILE_SIZE;
+		}
+		else
+		{
+			textureOffsetX = (int)rays[i].wallHitX % TILE_SIZE;
+		}
+
+		for(int y = wallTopPixel; y < wallBotPixel; y++)
+		{
+			int distanceFromTop = y + (projectedHeight / 2) - (WINDOW_HEIGHT / 2);
+			int textureOffsetY = distanceFromTop * ((float)TEXTURE_HEIGHT / projectedHeight);
+
+			Uint32 texelColor = texture[(TEXTURE_WIDTH * textureOffsetY) + textureOffsetX];
+			colorBuffer[(WINDOW_WIDTH * y)  + i] = texelColor;
+		}
+	}
 }
 
 void render()
@@ -311,8 +463,13 @@ void render()
 	SDL_SetRenderDrawColor(renderer, 0,0,0,255);
 	SDL_RenderClear(renderer);
 
+	renderWalls();
+	renderColorBuffer();
+	clearColorBuffer(0xFF000000);
+
 	renderMap();
 	renderPlayer();
+	renderRays();
 
 	SDL_RenderPresent(renderer);
 }
@@ -334,6 +491,9 @@ int main(int argc, char* argv[])
 
 void destroyWindow()
 {
+	free(colorBuffer);
+	SDL_DestroyTexture(colorBufferTexture);
+
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
