@@ -65,7 +65,7 @@ float castRay(float rayAngle, int index)
 	float nextHorizontalTouchX = xIntercept;
 	float nextHorizontalTouchY = yIntercept;
 
-	while(nextHorizontalTouchX >= 0 && nextHorizontalTouchX <= WINDOW_WIDTH && nextHorizontalTouchY >= 0 && nextHorizontalTouchY <= WINDOW_HEIGHT)
+	while(nextHorizontalTouchX >= 0 && nextHorizontalTouchX <= (MAP_NUM_COLS * TILE_SIZE) && nextHorizontalTouchY >= 0 && nextHorizontalTouchY <= (MAP_NUM_ROWS * TILE_SIZE))
 	{
 		float xToCheck = nextHorizontalTouchX;
 		float yToCheck = nextHorizontalTouchY + (isRayFacingUp ? -1 : 0);
@@ -107,7 +107,7 @@ float castRay(float rayAngle, int index)
 	float nextVerticalTouchX = xIntercept;
 	float nextVerticalTouchY = yIntercept;
 
-	while(nextVerticalTouchX >= 0 && nextVerticalTouchX <= WINDOW_WIDTH && nextVerticalTouchY >= 0 && nextVerticalTouchY <= WINDOW_HEIGHT)
+	while(nextVerticalTouchX >= 0 && nextVerticalTouchX <= (MAP_NUM_COLS * TILE_SIZE) && nextVerticalTouchY >= 0 && nextVerticalTouchY <= (MAP_NUM_ROWS * TILE_SIZE))
 	{
 		float xToCheck = nextVerticalTouchX + (isRayFacingLeft ? -1 : 0);
 		float yToCheck = nextVerticalTouchY;
@@ -249,8 +249,8 @@ void renderMap()
 
 void setup()
 {
-	player.x = WINDOW_WIDTH / 2;
-	player.y = WINDOW_HEIGHT / 2;
+	player.x = (MAP_NUM_COLS / 2) * TILE_SIZE;
+	player.y = (MAP_NUM_ROWS / 2) * TILE_SIZE;
 	player.height = 5;
 	player.width = 5;
 	player.turnDirection = 0;
