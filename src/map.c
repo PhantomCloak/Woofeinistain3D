@@ -16,7 +16,7 @@ const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
     {1, 1, 1, 4, 1, 4, 1, 4, 1, 4, 1, 6, 5, 5, 6, 6, 6, 6, 6, 1}
 };
 
-int isInsideWall(int x, int y)
+bool isInsideWall(int x, int y)
 {
 	int row = floor(y / TILE_SIZE);
 	int column = floor(x / TILE_SIZE);

@@ -1,30 +1,17 @@
 #include <SDL2/SDL.h>
 #include "SDL2/SDL_log.h"
+#include <stdbool.h>
 #include "constans.h"
 #include "helper.h"
 #include "textures.h"
 #include "map.h"
 #include "player.h"
+#include "ray.h"
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-int isGameRunning = 0;
+bool isGameRunning = false;
 float tickLastFrame = 0;
-
-
-struct Ray
-{
-	float rayAngle;
-	float wallHitX;
-	float wallHitY;
-	float distance;
-	int wasHitVertical;
-	int rayFacingUp;
-	int rayFacingDown;
-	int rayFacingRight;
-	int rayFacingLeft;
-	int wallHitContent;
-} rays[NUM_RAYS];
 
 Uint32* colorBuffer = NULL;
 SDL_Texture* colorBufferTexture;
@@ -33,18 +20,18 @@ float castRay(float rayAngle, int index)
 {
 	rayAngle = normalizeAngle(rayAngle);
 
-	int isRayFacingDown = rayAngle > 0 && rayAngle < PI;
-	int isRayFacingUp = !isRayFacingDown;
+	bool isRayFacingDown = rayAngle > 0 && rayAngle < PI;
+	bool isRayFacingUp = !isRayFacingDown;
 	
-	int isRayFacingRight = rayAngle < 0.5 * PI || rayAngle > 1.5 * PI;
-	int isRayFacingLeft = !isRayFacingRight;
+	bool isRayFacingRight = rayAngle < 0.5 * PI || rayAngle > 1.5 * PI;
+	bool isRayFacingLeft = !isRayFacingRight;
 
 	float xIntercept;
 	float yIntercept;
 	float xStep;
 	float yStep;
 
-	int foundHorizontalWallHit = 0;
+	bool foundHorizontalWallHit = 0;
 	int horizontalWallHitX = 0;
 	int horizontalWallHitY = 0;
 	int horizontalWallContent = 0;
@@ -75,7 +62,7 @@ float castRay(float rayAngle, int index)
 			horizontalWallHitX = nextHorizontalTouchX;
 			horizontalWallHitY = nextHorizontalTouchY;
 			horizontalWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
-			foundHorizontalWallHit = 1;
+			foundHorizontalWallHit = true;
 			break;
 		}
 		else
@@ -87,7 +74,7 @@ float castRay(float rayAngle, int index)
 
 	// Vertical check
 	//--------------------------------------------------------------------------
-	int foundVerticalWallHit = 0;
+	bool foundVerticalWallHit = 0;
 	int verticalWallHitX = 0;
 	int verticalWallHitY = 0;
 	int verticalWallContent = 0;
@@ -117,7 +104,7 @@ float castRay(float rayAngle, int index)
 			verticalWallHitX = nextVerticalTouchX;
 			verticalWallHitY = nextVerticalTouchY;
 			verticalWallContent = map[(int)floor(yToCheck / TILE_SIZE)][(int)floor(xToCheck / TILE_SIZE)];
-			foundVerticalWallHit = 1;
+			foundVerticalWallHit = true;
 			break;
 		}
 		else
@@ -137,7 +124,7 @@ float castRay(float rayAngle, int index)
 		rays[index].wallHitX = verticalWallHitX;
 		rays[index].wallHitY = verticalWallHitY;
 		rays[index].wallHitContent = verticalWallContent;
-		rays[index].wasHitVertical = 1;
+		rays[index].wasHitVertical = true;
 	}
 	else
 	{
@@ -145,14 +132,10 @@ float castRay(float rayAngle, int index)
 		rays[index].wallHitX = horizontalWallHitX;
 		rays[index].wallHitY = horizontalWallHitY;
 		rays[index].wallHitContent = horizontalWallContent;
-		rays[index].wasHitVertical = 0;
+		rays[index].wasHitVertical = false;
 	}
 
 	rays[index].rayAngle = rayAngle;
-	rays[index].rayFacingDown = isRayFacingDown;
-	rays[index].rayFacingUp = isRayFacingUp;
-	rays[index].rayFacingLeft = isRayFacingLeft;
-	rays[index].rayFacingRight = isRayFacingRight;
 }
 
 void castAlLRays()
@@ -164,12 +147,12 @@ void castAlLRays()
 	}
 }
 
-int initializeWindow()
+bool initializeWindow()
 {
 	if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
 		fprintf(stderr,"Error on initializing SDL\n");
-		return 0;
+		return false;
 	}
 
 	window = SDL_CreateWindow("Duum3D",
@@ -177,12 +160,12 @@ int initializeWindow()
 			SDL_WINDOWPOS_CENTERED,
 			WINDOW_WIDTH,
 			WINDOW_HEIGHT,
-			SDL_WINDOW_BORDERLESS);
+			SDL_WINDOW_RESIZABLE);
 
 	if(!window)
 	{
 		fprintf(stderr, "Error creating window");
-		return 0;
+		return false;
 	}
 
 	renderer = SDL_CreateRenderer(window, -1, 0);
@@ -190,12 +173,12 @@ int initializeWindow()
 	if(!renderer)
 	{
 		fprintf(stderr, "Error creating renderer");
-		return 0;
+		return false;
 	}
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	return 1;
+	return true;
 }
 
 void renderRays()
@@ -279,7 +262,7 @@ void processInput()
 		case SDL_KEYDOWN:
 			{
 				if(event.key.keysym.sym == SDLK_ESCAPE)
-					isGameRunning = 0;
+					isGameRunning = false;
 				if(event.key.keysym.sym == SDLK_UP)
 					player.walkDirection = +1;
 				if(event.key.keysym.sym == SDLK_DOWN)
@@ -291,8 +274,6 @@ void processInput()
 			}break;
 		case SDL_KEYUP:
 			{
-				if(event.key.keysym.sym == SDLK_ESCAPE)
-					isGameRunning = 0;
 				if(event.key.keysym.sym == SDLK_UP)
 					player.walkDirection = 0;
 				if(event.key.keysym.sym == SDLK_DOWN)
@@ -352,9 +333,9 @@ void renderColorBuffer()
 
 void renderWalls()
 {
-	for(int i = 0; i < NUM_RAYS; i++)
+	for(int x = 0; x < NUM_RAYS; x++)
 	{
-		float correctWallDistance = rays[i].distance * cos(rays[i].rayAngle - player.rotationAngle);
+		float correctWallDistance = rays[x].distance * cos(rays[x].rayAngle - player.rotationAngle);
 		float projectedHeight = (TILE_SIZE / correctWallDistance) * DIST_PROJ_PLANE;
 
 		int wallHeight = (int)projectedHeight;
@@ -366,16 +347,16 @@ void renderWalls()
 		wallBotPixel = wallBotPixel > WINDOW_HEIGHT ? WINDOW_HEIGHT : wallBotPixel;
 
 		int textureOffsetX;
-		if(rays[i].wasHitVertical)
+		if(rays[x].wasHitVertical)
 		{
-			textureOffsetX = (int)rays[i].wallHitY % TILE_SIZE;
+			textureOffsetX = (int)rays[x].wallHitY % TILE_SIZE;
 		}
 		else
 		{
-			textureOffsetX = (int)rays[i].wallHitX % TILE_SIZE;
+			textureOffsetX = (int)rays[x].wallHitX % TILE_SIZE;
 		}
 
-		int texNum = rays[i].wallHitContent - 1;
+		int texNum = rays[x].wallHitContent - 1;
 		int textureWidth = wallTextures[texNum].width;
 		int textureHeight = wallTextures[texNum].height;
 
@@ -384,7 +365,7 @@ void renderWalls()
 			int distanceFromTop = y + ((int)projectedHeight / 2) - (WINDOW_HEIGHT / 2);
 			int textureOffsetY = distanceFromTop * ((float)textureHeight / (int)projectedHeight);
 			Uint32 texelColor = wallTextures[texNum].texture_buffer[(textureWidth * textureOffsetY) + textureOffsetX];
-			colorBuffer[(WINDOW_WIDTH * y)  + i] = texelColor;
+			colorBuffer[(WINDOW_WIDTH * y)  + x] = texelColor;
 		}
 	}
 }
