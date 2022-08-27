@@ -1,3 +1,5 @@
+#include <math.h>
+#include "vector.h"
 
 struct Player{
 	float x;
@@ -10,4 +12,7 @@ struct Player{
 	float walkSpeed;
 	float turnSpeed;
 } player;
+
+extern struct Vector2 playerNextPosition(float dt);
+extern void playerSetPosition(int x, int y);
 

@@ -27,8 +27,8 @@ struct Ray
 } rays[NUM_RAYS];
 
 Uint32* colorBuffer = NULL;
-Uint32* textures[NUM_TEXTURES];
 SDL_Texture* colorBufferTexture;
+
 float castRay(float rayAngle, int index)
 {
 	rayAngle = normalizeAngle(rayAngle);
@@ -164,24 +164,6 @@ void castAlLRays()
 		castRay(rayAngle, stripId);
 		rayAngle += FOV_ANGLE / NUM_RAYS;
 	}
-}
-
-void movePlayer(float dt)
-{
-	player.rotationAngle += player.turnDirection * player.turnSpeed * dt;
-   	float moveStep = player.walkDirection * player.walkSpeed * dt;
-
-    float newPlayerX = player.x + cos(player.rotationAngle) * moveStep;
-    float newPlayerY = player.y + sin(player.rotationAngle) * moveStep;
-
-	int res = isInsideWall(newPlayerX, newPlayerY);
-	if(res)
-	{
-		return;
-	}
-
-    player.x = newPlayerX;
-    player.y = newPlayerY;
 }
 
 int initializeWindow()
@@ -327,8 +309,6 @@ void processInput()
 
 void update()
 {
-	while(!SDL_TICKS_PASSED(SDL_GetTicks(), tickLastFrame + FRAME_TIME_LENGTH));
-
 	int timeToWait = FRAME_TIME_LENGTH - (SDL_GetTicks() - tickLastFrame);
 
 	if(timeToWait > 0 && timeToWait <= FRAME_TIME_LENGTH)
@@ -339,7 +319,13 @@ void update()
 	float dt = (SDL_GetTicks() - tickLastFrame) / 1000.0f;
 	tickLastFrame = SDL_GetTicks();
 
-	movePlayer(dt);
+	struct Vector2 pPos = playerNextPosition(dt);
+
+	if(!isInsideWall(pPos.x, pPos.y))
+	{
+		playerSetPosition(pPos.x, pPos.y);
+	}
+
 	castAlLRays();
 }
 
