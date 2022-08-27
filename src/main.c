@@ -157,12 +157,10 @@ float castRay(float rayAngle, int index)
 
 void castAlLRays()
 {
-	float rayAngle = player.rotationAngle - (FOV_ANGLE / 2);
-
-	for(int stripId = 0; stripId < NUM_RAYS; stripId++)
+	for(int col = 0; col < NUM_RAYS; col++)
 	{
-		castRay(rayAngle, stripId);
-		rayAngle += FOV_ANGLE / NUM_RAYS;
+		float rayAngle = player.rotationAngle + atan((col - NUM_RAYS / 2) / DIST_PROJ_PLANE);
+		castRay(rayAngle, col);
 	}
 }
 
@@ -356,9 +354,8 @@ void renderWalls()
 {
 	for(int i = 0; i < NUM_RAYS; i++)
 	{
-		float distanceProjectPlane = (WINDOW_WIDTH / 2) / tan(FOV_ANGLE / 2);
 		float correctWallDistance = rays[i].distance * cos(rays[i].rayAngle - player.rotationAngle);
-		float projectedHeight = (TILE_SIZE / correctWallDistance) * distanceProjectPlane;
+		float projectedHeight = (TILE_SIZE / correctWallDistance) * DIST_PROJ_PLANE;
 
 		int wallHeight = (int)projectedHeight;
 
