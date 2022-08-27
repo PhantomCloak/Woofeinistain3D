@@ -1,42 +1,16 @@
 #include <SDL2/SDL.h>
 #include "SDL2/SDL_log.h"
 #include "constans.h"
+#include "helper.h"
 #include "textures.h"
+#include "map.h"
+#include "player.h"
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 int isGameRunning = 0;
-
 float tickLastFrame = 0;
 
-
-const int map[MAP_NUM_ROWS][MAP_NUM_COLS] = {
-    {1, 1, 1, 4, 1, 4, 1, 4, 1, 1, 1, 6, 5 ,5, 6, 6, 6, 6, 6, 6},
-    {1, 4, 4, 4, 0, 4, 4, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 4, 0, 0, 0, 0, 0, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 2, 0, 0, 0, 0, 0, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 4, 0, 0, 0, 0, 0, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 3, 0, 0, 0, 0, 0, 4, 4, 4, 4, 6, 0, 0, 6, 0, 6, 6, 6, 6},
-    {1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 6, 0, 0, 6, 0, 6, 6, 6, 6},
-    {1, 2, 0, 0, 0, 0, 0, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 4, 0, 0, 0, 0, 0, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 4, 4, 4, 0, 4, 4, 4, 0, 4, 0, 6, 0, 0, 6, 0, 0, 0, 0, 6},
-    {1, 1, 1, 4, 1, 4, 1, 4, 1, 4, 1, 6, 5, 5, 6, 6, 6, 6, 6, 1}
-};
-
-struct Player{
-	float x;
-	float y;
-	float width;
-	float height;
-	int turnDirection;
-	int walkDirection;
-	float rotationAngle;
-	float walkSpeed;
-	float turnSpeed;
-} player;
 
 struct Ray
 {
@@ -55,31 +29,6 @@ struct Ray
 Uint32* colorBuffer = NULL;
 Uint32* textures[NUM_TEXTURES];
 SDL_Texture* colorBufferTexture;
-
-int isInsideWall(int x, int y)
-{
-	int row = floor(y / TILE_SIZE);
-	int column = floor(x / TILE_SIZE);
-
-	return map[row][column] != 0;
-}
-
-float normalizeAngle(float rayAngle)
-{
-	rayAngle = remainder(rayAngle, TWO_PI);
-	if(rayAngle < 0)
-	{
-		rayAngle = 	TWO_PI + rayAngle;
-	}
-
-	return rayAngle;
-}
-
-float distanceBetweenPoints(float x1, float y1, float x2, float y2)
-{
-	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-}
-
 float castRay(float rayAngle, int index)
 {
 	rayAngle = normalizeAngle(rayAngle);
