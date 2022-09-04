@@ -74,19 +74,19 @@ void drawLine(int x0, int y0, int x1, int y1, uint32_t color)
 	}
 }
 
-void drawTexture(int x, int y, int width, int height, upng_t* texture)
+void drawTexture(int xStart, int yStart, int width, int height, upng_t* texture)
 {
 	int textureW = upng_get_width(texture);
 	int textureH = upng_get_height(texture);
 	uint32_t* textureBuffer = (uint32_t*)upng_get_buffer(texture);
 
-	int spriteHeight = textureH * 10;
-	int spriteWidth = textureW * 10; 
+	float originalGivenRatioH = height / (float)textureW;
+	float originalGivenRatioW = width / (float)textureW;
 
-	float xStart = (WINDOW_WIDTH / 2) - (spriteWidth / 2);
+	int spriteHeight = textureH * originalGivenRatioH;
+	int spriteWidth = textureW * originalGivenRatioW; 
+
 	float xEnd = xStart + spriteWidth;
-
-	float yStart = (WINDOW_HEIGHT) - spriteHeight;
 	yStart = yStart < 0 ? 0 : yStart;
 
 	float yEnd = yStart + spriteHeight;
@@ -96,8 +96,8 @@ void drawTexture(int x, int y, int width, int height, upng_t* texture)
 	{
 		for(int y = yStart; y < yEnd ;y++)
 		{
-			int yOffset = textureH * (int)floor((y - yStart) / 10);
-			int xOffset = (x - (int)xStart) / 10;
+			int yOffset = textureH * (int)floor((y - yStart) / originalGivenRatioH);
+			int xOffset = (x - (int)xStart) / originalGivenRatioW;
 
 			uint32_t texelColor = textureBuffer[yOffset + xOffset];
 			if(texelColor != 0xFF880098)

@@ -43,7 +43,16 @@ void renderPlayer()
 	int yEnd = (WINDOW_HEIGHT + 64) * 10;
 
 	upng_t* texture = textures[14];
-	drawTexture(0,0,0,0,texture);
+
+	int weaponX = (WINDOW_WIDTH / 2);
+
+	int gunTexWidth = 512;
+	int gunTexHeight = 512;
+
+	int gunX = ((WINDOW_WIDTH / 2) - (gunTexWidth / 2));
+	int gunY = (WINDOW_HEIGHT) - gunTexHeight;
+
+	drawTexture(gunX , gunY, gunTexWidth, gunTexHeight, texture);
 
 	drawRectangle(player.x * MINIMAP_SCALE_FACTOR, player.y * MINIMAP_SCALE_FACTOR,
 			player.width,
