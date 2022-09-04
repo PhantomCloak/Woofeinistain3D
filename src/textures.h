@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "upng.h"
 
-#define NUM_TEXTURES 14
+#define NUM_TEXTURES 16
 
 upng_t* textures[NUM_TEXTURES];
 

@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "vector.h"
 #include "mathUtil.h"
+#include "textures.h"
 
 typedef struct Player{
 	float x;

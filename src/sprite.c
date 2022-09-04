@@ -1,11 +1,12 @@
 #include "sprite.h"
 
-#define NUM_SPRITES 3
+#define NUM_SPRITES 4
 
 static sprite_t sprites[NUM_SPRITES] = {
 	{.x = 200, .y = 600, .textureIndex = 9}, // barell
 	{.x = 200, .y = 500, .textureIndex = 11}, // barell
-	{.x = 300, .y = 500, .textureIndex = 12} // barell
+	{.x = 300, .y = 500, .textureIndex = 12}, // barell
+	{.x = 250, .y = 600, .textureIndex = 10} // barell
 };
 
 void renderSprites()
@@ -60,6 +61,7 @@ void renderMapSprites()
 	{
 		sprite_t sprite = visibleSprites[i];
 		float spriteHeight = (TILE_SIZE / sprite.distance) * DIST_PROJ_PLANE;
+
 		float spriteWidth = spriteHeight;
 
 		float spriteTopY = (WINDOW_HEIGHT / 2) - (spriteHeight / 2);

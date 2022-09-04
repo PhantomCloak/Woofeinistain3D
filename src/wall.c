@@ -16,7 +16,7 @@ void renderWalls()
 		
         // set the color of the ceiling
         for (int y = 0; y < wallTopY; y++) {
-            drawPixel(x, y, 0xFF444444);
+            drawPixel(x, y, 0xFF383838);
         }
 
 		int textureOffsetX;
@@ -64,7 +64,7 @@ void renderWalls()
 			uint32_t texelColor = floorTextureBuffer[((floorTextureWidth * textureOffsetY) + textureOffsetX) % (64 * 64)];
 
 			//drawPixel(x, y, texelColor);
-			drawPixel(x, y, 0xFF444444);
+			drawPixel(x, y, 0xFF717171);
 		}
 
 	}

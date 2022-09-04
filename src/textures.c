@@ -4,7 +4,7 @@
 static const char* textureFileNames[NUM_TEXTURES] = {
 	"./images/redbrick.png",
 	"./images/nazistone.png",
-	"./images/woodhitler.png",
+	"./images/hitler_wall.png",
 	"./images/graystone.png",
 	"./images/colorstone.png",
 	"./images/bluestone.png",
@@ -16,6 +16,8 @@ static const char* textureFileNames[NUM_TEXTURES] = {
 	"./images/table.png",
 	"./images/guard.png",
 	"./images/armor.png",
+	"./images/gun_1.png",
+	"./images/nazi_flag_stone.png"
 };
 
 

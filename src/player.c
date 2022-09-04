@@ -37,6 +37,14 @@ void playerSetPosition(int x, int y)
 
 void renderPlayer()
 {
+	int xStart = ((WINDOW_WIDTH / 2) - 32) * 10;
+	int xEnd = ((WINDOW_WIDTH / 2) + 32) * 10;
+	int yStart = (WINDOW_HEIGHT - 64) * 10;
+	int yEnd = (WINDOW_HEIGHT + 64) * 10;
+
+	upng_t* texture = textures[14];
+	drawTexture(0,0,0,0,texture);
+
 	drawRectangle(player.x * MINIMAP_SCALE_FACTOR, player.y * MINIMAP_SCALE_FACTOR,
 			player.width,
 			player.height,0xFFFF0000);
