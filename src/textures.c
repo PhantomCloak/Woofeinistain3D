@@ -10,10 +10,16 @@ static const char* textureFileNames[NUM_TEXTURES] = {
 	"./images/bluestone.png",
 	"./images/wood.png",
 	"./images/eagle.png",
+	"./images/wood1.png", 
+	"./images/barrel.png",
+	"./images/light.png",
+	"./images/table.png",
+	"./images/guard.png",
+	"./images/armor.png",
 };
 
 
-void loadWallTextures()
+void loadTextures()
 {
 	for(int i = 0; i < NUM_TEXTURES; i++)
 	{
@@ -21,24 +27,36 @@ void loadWallTextures()
 		upng = upng_new_from_file(textureFileNames[i]);
 
 		if(upng == NULL)
+		{
+			printf("Error loading texture file %s\n", textureFileNames[i]);
 			continue;
+		}
 
 		upng_decode(upng);
 
 		if(upng_get_error(upng) != UPNG_EOK)
-			return;
-
-		wallTextures[i].upngTexture = upng;
-		wallTextures[i].width = upng_get_width(upng);
-		wallTextures[i].height = upng_get_height(upng);
-		wallTextures[i].texture_buffer = (uint32_t*)upng_get_buffer(upng);
+		{
+			printf("Error loading texture %s\n", textureFileNames[i]);
+			continue;
+		}
+		textures[i] = upng;
 	}
 }
 
-void clearAllTextures()
+void freeTextures()
 {
 	for(int i = 0; i < NUM_TEXTURES; i++)
 	{
-		upng_free(wallTextures[i].upngTexture);
+		upng_free(textures[i]);
 	}
+}
+
+void changeColorShading(uint32_t* color, float shading)
+{
+    uint32_t a = (*color & 0xFF000000);
+    uint32_t r = (*color & 0x00FF0000) * shading;
+    uint32_t g = (*color & 0x0000FF00) * shading;
+    uint32_t b = (*color & 0x000000FF) * shading;
+
+    *color = a | (r & 0x00FF0000) | (g & 0x0000FF00) | (b & 0x000000FF);
 }

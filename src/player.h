@@ -1,7 +1,13 @@
-#include <math.h>
-#include "vector.h"
+#ifndef PLAYER_H
+#define PLAYER_H
 
-struct Player{
+#include <math.h>
+#include "constans.h"
+#include "graphics.h"
+#include "vector.h"
+#include "mathUtil.h"
+
+typedef struct Player{
 	float x;
 	float y;
 	float width;
@@ -11,8 +17,11 @@ struct Player{
 	float rotationAngle;
 	float walkSpeed;
 	float turnSpeed;
-} player;
+} player_t;
 
-extern struct Vector2 playerNextPosition(float dt);
-extern void playerSetPosition(int x, int y);
+extern player_t player;
+struct Vector2 playerNextPosition(float dt);
+void playerSetPosition(int x, int y);
+void renderPlayer();
 
+#endif

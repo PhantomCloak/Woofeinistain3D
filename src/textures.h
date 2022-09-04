@@ -2,17 +2,14 @@
 #define TEXTURES_H
 
 #include <stdint.h>
-#include "constans.h"
 #include "upng.h"
 
-typedef struct{
-	int width;
-	int height;
-	uint32_t* texture_buffer;
-	upng_t* upngTexture;
-} texture_t;
+#define NUM_TEXTURES 14
 
-texture_t wallTextures[NUM_TEXTURES];
-void loadWallTextures();
-void clearAllTextures();
+upng_t* textures[NUM_TEXTURES];
+
+void loadTextures();
+void freeTextures();
+
+void changeColorShading(uint32_t* color, float shading);
 #endif
