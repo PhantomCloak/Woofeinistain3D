@@ -9,4 +9,7 @@ Raycasting engine made with C
 - #### Animator [WIP]
 - #### SoundManager [WIP]
 - #### AI [WIP]
+- #### Actual Playable Game [WIP]
 
+## Motivation 
+It's mainly because of fun meanwhile programming game in old-school style is pretty cool, I'm planning to add few more mechanics to make it more actuall looking game, with few extras in my pocket such as more modern player controller and more engaging AI it will be much more than Wolfenistain3D clone.
