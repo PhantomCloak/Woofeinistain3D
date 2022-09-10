@@ -41,7 +41,7 @@ void renderWalls()
 
 			if(rays[x].wasHitVertical)
 			{
-				changeColorShading(&texelColor, 0.7);
+				changeColorShading(&texelColor, 0.6);
 			}
 
 			drawPixel(x, y, texelColor);
