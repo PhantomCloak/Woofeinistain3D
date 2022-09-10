@@ -39,10 +39,14 @@ void processInput()
 					player.turnDirection = -1;
 				if(event.key.keysym.sym == SDLK_SPACE)
 					player.isShooting = true;
+				if(event.key.keysym.sym == SDLK_0)
+                    player.currentWeapon = "knife";
 				if(event.key.keysym.sym == SDLK_1)
                     player.currentWeapon = "handgun";
 				if(event.key.keysym.sym == SDLK_2)
                     player.currentWeapon = "smg";
+				if(event.key.keysym.sym == SDLK_3)
+                    player.currentWeapon = "minigun";
 			}break;
 		case SDL_KEYUP:
 			{

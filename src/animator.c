@@ -4,7 +4,9 @@ static animation_t animations[NUM_ANIMATION];
 static animstate_t animationSteps[NUM_ANIMATION];
 static const char* animationFolderNames[NUM_ANIMATION] = {
 	"./anims/handgun",
-	"./anims/smg"
+	"./anims/smg",
+	"./anims/minigun",
+	"./anims/knife"
 };
 
 

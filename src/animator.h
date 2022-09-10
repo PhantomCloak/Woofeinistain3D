@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define NUM_ANIMATION 2
+#define NUM_ANIMATION 4
 #define NUM_MAX_CLIP 32
 
 typedef struct
